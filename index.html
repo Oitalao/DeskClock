@@ -245,7 +245,7 @@ if (navigator.geolocation) {
   navigator.geolocation.getCurrentPosition(
     pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
     err => fetchWeather(),
-    { timeout: 5000 }
+    { timeout: 50000 }
   );
 } else { fetchWeather(); }
 setInterval(() => navigator.geolocation.getCurrentPosition(p => fetchWeather(p.coords.latitude, p.coords.longitude), e => fetchWeather()), 3600000);
@@ -312,23 +312,36 @@ function handleAuthClick() {
 
 async function listUpcomingEvents() {
   try {
+    const now = new Date();
+    const nextWeek = new Date();
+    nextWeek.setDate(now.getDate() + 7);
+
     const response = await gapi.client.calendar.events.list({
-      'calendarId': 'primary', 'timeMin': (new Date()).toISOString(),
-      'showDeleted': false, 'singleEvents': true, 'maxResults': 6, 'orderBy': 'startTime'
+      'calendarId': 'primary', 
+      'timeMin': now.toISOString(),
+      'timeMax': nextWeek.toISOString(),
+      'showDeleted': false, 
+      'singleEvents': true, 
+      'maxResults': 15, 
+      'orderBy': 'startTime'
     });
+    
     const events = response.result.items;
     const list = document.getElementById('events-list');
     list.innerHTML = '';
+    
     if (!events || events.length === 0) {
       list.innerHTML = '<div style="text-align:center; color:var(--muted); font-size: 14px; margin-top: 50px;">Nenhum evento próximo. Dia livre! ☕</div>';
       return;
     }
+    
     events.forEach(ev => {
       const start = ev.start.dateTime || ev.start.date;
       const d = new Date(start);
       const timeStr = ev.start.dateTime ? pad(d.getHours())+':'+pad(d.getMinutes()) : 'Dia Todo';
       const isToday = d.toDateString() === new Date().toDateString();
       const dateLbl = isToday ? 'Hoje, ' : `${pad(d.getDate())}/${pad(d.getMonth()+1)} - `;
+      
       list.innerHTML += `
         <div class="event-item">
           <div class="event-time">${timeStr}</div>
@@ -336,7 +349,9 @@ async function listUpcomingEvents() {
         </div>
       `;
     });
-  } catch (err) { console.error("Erro na agenda", err); }
+  } catch (err) { 
+    console.error("Erro na agenda", err); 
+  }
 }
 
 /* ==========================================
