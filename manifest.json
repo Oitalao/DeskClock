@@ -1,0 +1,16 @@
+{
+  "name": "OLED Smart Clock",
+  "short_name": "Clock",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#000000",
+  "theme_color": "#ff8c00",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3106/3106180.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

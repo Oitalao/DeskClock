@@ -1,0 +1,132 @@
+:root {
+    --bg-color: #000000;
+    --accent-color: #ff8c00; /* Laranja aesthetic */
+    --text-color: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    overflow: hidden; /* Esconde rolagem */
+    width: 100vw;
+    height: 100vh;
+}
+
+/* PROTEÇÃO CONTRA BURN-IN 
+   Move a tela inteira em um raio de 10px bem devagar a cada 5 minutos */
+@keyframes burnInProtect {
+    0%   { transform: translate(0px, 0px); }
+    25%  { transform: translate(5px, 8px); }
+    50%  { transform: translate(-4px, -6px); }
+    75%  { transform: translate(6px, -2px); }
+    100% { transform: translate(0px, 0px); }
+}
+
+#burn-in-protector {
+    width: 100%;
+    height: 100%;
+    animation: burnInProtect 300s infinite alternate linear;
+    display: flex;
+    flex-direction: column;
+}
+
+#carousel {
+    display: flex;
+    width: 300vw; /* 3 telas */
+    height: 90vh;
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.screen {
+    width: 100vw;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+/* Tipografia Relógio */
+.clock-time {
+    font-size: 8rem;
+    font-weight: 300;
+    color: var(--accent-color);
+    text-shadow: 0 0 20px rgba(255, 140, 0, 0.3);
+}
+
+.clock-date {
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    opacity: 0.8;
+}
+
+/* Tipografia Clima e Calendário */
+h2 {
+    color: var(--accent-color);
+    margin-bottom: 20px;
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+#temp { font-size: 4rem; color: var(--accent-color); }
+.weather-info p { font-size: 1.2rem; margin-top: 10px; }
+
+#events-list {
+    margin-top: 15px;
+    max-height: 50vh;
+    overflow-y: auto;
+    width: 80%;
+    text-align: left;
+}
+.event-item {
+    padding: 10px;
+    border-left: 3px solid var(--accent-color);
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Inputs e Botões */
+.aesthetic-btn, button {
+    background: transparent;
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: 0.3s;
+}
+.aesthetic-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--accent-color);
+    color: white;
+    padding: 10px;
+    font-size: 1rem;
+    outline: none;
+}
+
+/* Dots */
+.dots {
+    height: 10vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+.dot {
+    width: 8px;
+    height: 8px;
+    background: #555;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+.dot.active { background: var(--accent-color); box-shadow: 0 0 10px var(--accent-color); }
