@@ -1,61 +1,359 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OLED Smart Clock</title>
-    
-    <link rel="manifest" href="manifest.json">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="style.css">
-    
-    <script async defer src="https://apis.google.com/js/api.js"></script>
-    <script async defer src="https://accounts.google.com/gsi/client"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<title>OLED Smart Clock</title>
+
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script async defer src="https://apis.google.com/js/api.js"></script>
+<script async defer src="https://accounts.google.com/gsi/client"></script>
+
+<style>
+:root {
+  --bg: #000000; 
+  --text: #f2ede5;
+  --muted: rgba(242, 237, 229, 0.4);
+  --accent: #ff8c00;
+  --glass: rgba(255, 255, 255, 0.05);
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+html, body {
+  width: 100vw; height: 100vh;
+  background: var(--bg); color: var(--text);
+  font-family: 'Space Mono', monospace;
+  overflow: hidden;
+  position: fixed; 
+}
+
+/* Proteção Burn-in */
+@keyframes burnInProtect {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(2px, 2px); }
+  50% { transform: translate(-2px, 1px); }
+  75% { transform: translate(1px, -2px); }
+  100% { transform: translate(0, 0); }
+}
+#burn-in-wrapper {
+  width: 100%; height: 100%;
+  animation: burnInProtect 120s infinite linear;
+}
+
+/* Carrossel */
+.viewport { position: absolute; inset: 0; overflow: hidden; z-index: 1; }
+.track { display: flex; height: 100%; width: 300%; transition: transform 0.6s cubic-bezier(0.25, 1, 0.35, 1); }
+.slide { width: 33.3333%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 4vw 8vw; flex-direction: column; }
+
+/* 1. Relógio */
+.time-display { font-family: 'Cormorant Garamond', serif; font-size: clamp(90px, 22vw, 240px); font-weight: 300; line-height: 0.9; letter-spacing: -3px; text-shadow: 0 0 50px rgba(255, 140, 0, 0.12); }
+.colon { color: var(--accent); animation: blink 1s step-end infinite; }
+@keyframes blink { 50% { opacity: 0.2; } }
+/* Maior espaçamento vertical aqui */
+.date-display { font-size: clamp(12px, 2.5vw, 20px); color: var(--accent); letter-spacing: 5px; text-transform: uppercase; margin-top: 10vh; font-weight: 400; }
+.seconds-bar-wrapper { width: 60vw; max-width: 500px; height: 2px; background: var(--border); border-radius: 2px; margin-top: 4vh; overflow: hidden; }
+.seconds-bar { height: 100%; background: linear-gradient(90deg, #5a9ec4, var(--accent)); width: 0%; transition: width 1s linear; }
+
+/* 2. Clima */
+.weather-layout { display: flex; width: 100%; max-width: 800px; justify-content: space-around; align-items: center; gap: 4vw; margin-bottom: 4vh; }
+.wx-icon { font-size: clamp(80px, 16vw, 160px); color: var(--text); filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.1)); }
+.wx-info { display: flex; flex-direction: column; align-items: flex-start; }
+.wx-temp { font-family: 'Cormorant Garamond', serif; font-size: clamp(70px, 16vw, 160px); font-weight: 300; line-height: 1; }
+.wx-temp sup { font-size: 0.4em; color: var(--accent); vertical-align: super; }
+.wx-desc { font-size: clamp(12px, 2.5vw, 16px); color: var(--text); letter-spacing: 2px; text-transform: capitalize; margin-top: 15px; }
+.wx-loc { font-size: clamp(9px, 1.8vw, 12px); color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-top: 10px; display: flex; align-items: center; gap: 6px; }
+
+.wx-pills { display: flex; width: 100%; max-width: 800px; gap: 15px; justify-content: center; }
+.pill { flex: 1; background: var(--glass); border: 1px solid var(--border); padding: 16px 10px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+.pill i { font-size: 24px; color: var(--muted); margin-bottom: 4px; }
+.pill-val { font-size: clamp(16px, 3vw, 22px); font-weight: 700; color: var(--text); }
+.pill-lbl { font-size: clamp(8px, 1.5vw, 10px); color: var(--muted); letter-spacing: 2px; text-transform: uppercase; text-align: center; }
+
+/* 3. Calendário */
+.cal-container { width: 100%; max-width: 700px; height: 75vh; display: flex; flex-direction: column; }
+.cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+.cal-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(24px, 5vw, 36px); font-weight: 300; color: var(--text); }
+.btn-auth { background: transparent; border: 1px dashed var(--border); color: var(--muted); padding: 10px 18px; border-radius: 12px; font-family: inherit; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: all 0.2s; }
+.btn-auth:active { border-color: var(--accent); color: var(--accent); }
+.events-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scrollbar-width: none; padding-bottom: 30px; }
+.events-list::-webkit-scrollbar { display: none; }
+.event-item { background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 20px; display: flex; gap: 20px; align-items: center; }
+.event-time { color: var(--accent); font-size: 16px; font-weight: 700; min-width: 60px; text-align: right; }
+.event-title { font-size: 16px; color: var(--text); font-weight: 400; line-height: 1.4; }
+
+/* Indicadores (Dots) */
+.dots { position: fixed; bottom: 5vh; left: 50%; transform: translateX(-50%); display: flex; gap: 14px; z-index: 10; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: all 0.4s cubic-bezier(0.25, 1, 0.35, 1); }
+.dot.active { background: var(--accent); width: 32px; border-radius: 6px; box-shadow: 0 0 12px rgba(255, 140, 0, 0.5); }
+
+body.deep-night { opacity: 0.5; filter: grayscale(40%) sepia(20%) hue-rotate(-20deg); }
+</style>
 </head>
 <body>
-    <div id="burn-in-protector">
-        <div id="carousel">
-            
-            <div class="screen" id="screen-clock">
-                <div class="clock-time" id="time">00:00</div>
-                <div class="clock-date" id="date">Carregando data...</div>
-            </div>
 
-            <div class="screen" id="screen-weather">
-                <h2>Clima Atual</h2>
-                <div class="weather-info">
-                    <span id="temp">--°C</span>
-                    <p>Chuva: <span id="rain">--%</span> &nbsp;|&nbsp; Umidade: <span id="humidity">--%</span></p>
-                </div>
-            </div>
+<div id="burn-in-wrapper">
+  <div class="viewport">
+    <div class="track" id="track">
 
-            <div class="screen" id="screen-calendar">
-                <h2>Google Calendário</h2>
-                <button id="auth-btn" onclick="handleAuthClick()">Conectar Google</button>
-                
-                <div id="events-list"></div>
-                
-                <div id="add-event-form" style="display: none;">
-                    <div class="input-group">
-                        <input type="text" id="event-title" placeholder="Nome do evento" class="aesthetic-input">
-                        <button onclick="addEvent()" class="add-btn">+</button>
-                    </div>
-                </div>
-            </div>
+      <div class="slide">
+        <div class="time-display"><span id="hh">00</span><span class="colon">:</span><span id="mm">00</span></div>
+        <div class="date-display" id="date">Carregando...</div>
+        <div class="seconds-bar-wrapper"><div class="seconds-bar" id="seconds-bar"></div></div>
+      </div>
 
+      <div class="slide">
+        <div class="weather-layout">
+          <i class="wx-icon ph-light ph-hourglass" id="wico"></i>
+          <div class="wx-info">
+            <div class="wx-temp"><span id="wtemp">--</span><sup>°</sup></div>
+            <div class="wx-desc" id="wdesc">Buscando Clima...</div>
+            <div class="wx-loc"><i class="ph-light ph-map-pin"></i> <span id="wloc">Localizando</span></div>
+          </div>
         </div>
-        
-        <div class="dots">
-            <span class="dot active"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
+        <div class="wx-pills">
+          <div class="pill">
+            <i class="ph-light ph-drop"></i>
+            <span class="pill-val" id="whum">--%</span>
+            <span class="pill-lbl">Umidade</span>
+          </div>
+          <div class="pill">
+            <i class="ph-light ph-wind"></i>
+            <span class="pill-val" id="wwind">--</span>
+            <span class="pill-lbl">Vento (km/h)</span>
+          </div>
+          <div class="pill">
+            <i class="ph-light ph-cloud-rain"></i>
+            <span class="pill-val" id="wrain">--%</span>
+            <span class="pill-lbl">Chuva</span>
+          </div>
         </div>
+      </div>
+
+      <div class="slide">
+        <div class="cal-container">
+          <div class="cal-header">
+            <div class="cal-title">Próximos Eventos</div>
+            <button class="btn-auth" id="auth-btn" onclick="handleAuthClick()">Conectar Google</button>
+          </div>
+          <div class="events-list" id="events-list">
+            <div style="text-align:center; color:var(--muted); font-size: 12px; margin-top: 60px; letter-spacing: 2px;">
+              CONECTE SUA CONTA PARA VER A AGENDA
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 
-    <script src="script.js"></script>
+  <div class="dots">
+    <div class="dot active"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+</div>
+
+<script>
+/* ==========================================
+   1. WAKE LOCK API
+   ========================================== */
+let wakeLock = null;
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch (err) { console.error(`${err.name}, ${err.message}`); }
+}
+requestWakeLock();
+document.addEventListener('visibilitychange', async () => {
+  if (wakeLock !== null && document.visibilityState === 'visible') requestWakeLock();
+});
+
+/* ==========================================
+   2. RELÓGIO & DATA
+   ========================================== */
+function pad(n) { return ('0'+n).slice(-2); }
+const dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('hh').textContent = pad(now.getHours());
+  document.getElementById('mm').textContent = pad(now.getMinutes());
+  document.getElementById('date').textContent = `${dias[now.getDay()]} · ${pad(now.getDate())} ${meses[now.getMonth()]}`;
+  document.getElementById('seconds-bar').style.width = ((now.getSeconds() / 59) * 100) + '%';
+  
+  const h = now.getHours();
+  if (h >= 23 || h < 6) document.body.classList.add('deep-night');
+  else document.body.classList.remove('deep-night');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* ==========================================
+   3. CLIMA & LOCALIZAÇÃO (Phosphor Icons + Nominatim)
+   ========================================== */
+// Mapeamento de códigos climáticos para classes do Phosphor Icons
+const WX_ICON = {
+  0:'ph-sun', 1:'ph-cloud-sun', 2:'ph-cloud-sun', 3:'ph-cloud',
+  45:'ph-cloud-fog', 48:'ph-cloud-fog', 51:'ph-cloud-rain', 53:'ph-cloud-rain', 55:'ph-cloud-rain',
+  61:'ph-cloud-rain', 63:'ph-cloud-rain', 65:'ph-cloud-rain',
+  71:'ph-snow', 73:'ph-snow', 75:'ph-snow',
+  80:'ph-cloud-showers', 81:'ph-cloud-showers', 82:'ph-cloud-showers',
+  95:'ph-cloud-lightning', 96:'ph-cloud-lightning', 99:'ph-cloud-lightning'
+};
+const WX_DESC = {
+  0:'Céu Limpo', 1:'Pouco Nublado', 2:'Parcialmente Nublado', 3:'Nublado',
+  45:'Névoa', 48:'Névoa', 51:'Chuvisco', 53:'Chuvisco', 55:'Chuvisco Forte',
+  61:'Chuva Leve', 63:'Chuva Moderada', 65:'Chuva Forte',
+  71:'Neve Leve', 73:'Neve', 75:'Neve Forte',
+  80:'Pancadas', 81:'Pancadas', 82:'Pancadas Fortes',
+  95:'Trovoada', 96:'Granizo', 99:'Tempestade'
+};
+
+async function getCityName(lat, lon) {
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {headers: {'Accept-Language': 'pt-BR'}});
+    const data = await res.json();
+    const a = data.address || {};
+    return a.city || a.town || a.village || a.county || 'Localização Atual';
+  } catch(e) {
+    return 'Localização Atual';
+  }
+}
+
+async function fetchWeather(lat = -23.5505, lon = -46.6333) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&hourly=precipitation_probability&timezone=auto`;
+  try {
+    const res = await fetch(url);
+    const d = await res.json();
+    const c = d.current;
+    const hourIndex = new Date().getHours();
+    
+    // Atualiza ícone usando Phosphor
+    document.getElementById('wico').className = `wx-icon ph-light ${WX_ICON[c.weather_code] || 'ph-thermometer'}`;
+    
+    document.getElementById('wtemp').textContent = Math.round(c.temperature_2m);
+    document.getElementById('wdesc').textContent = WX_DESC[c.weather_code] || 'Clima Atual';
+    document.getElementById('whum').textContent = c.relative_humidity_2m + '%';
+    document.getElementById('wwind').textContent = Math.round(c.wind_speed_10m);
+    document.getElementById('wrain').textContent = d.hourly.precipitation_probability[hourIndex] + '%';
+
+    // Pega o nome da cidade real
+    const cityName = await getCityName(lat, lon);
+    document.getElementById('wloc').textContent = cityName;
+
+  } catch (e) { console.warn("Erro no clima", e); }
+}
+
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(
+    pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+    err => fetchWeather(), // SP fallback se negar
+    { timeout: 5000 }
+  );
+} else { fetchWeather(); }
+setInterval(() => navigator.geolocation.getCurrentPosition(p => fetchWeather(p.coords.latitude, p.coords.longitude), e => fetchWeather()), 3600000);
+
+/* ==========================================
+   4. CARROSSEL (SWIPE E AUTO)
+   ========================================== */
+const track = document.getElementById('track');
+const dots = document.querySelectorAll('.dot');
+let cur = 0, TOTAL = 3, AUTO_MS = 30000;
+let advTmr;
+
+function goTo(idx) {
+  cur = ((idx % TOTAL) + TOTAL) % TOTAL;
+  track.style.transform = `translateX(-${cur * 33.3333}%)`;
+  dots.forEach((d, i) => d.className = 'dot' + (i === cur ? ' active' : ''));
+  resetTmr();
+}
+function resetTmr() {
+  clearTimeout(advTmr);
+  advTmr = setTimeout(() => goTo(cur + 1), AUTO_MS);
+}
+resetTmr();
+
+let tx0 = 0, dragging = false;
+document.addEventListener('touchstart', e => { tx0 = e.touches[0].clientX; dragging = true; }, {passive: true});
+document.addEventListener('touchend', e => {
+  if (!dragging) return; dragging = false;
+  let dx = e.changedTouches[0].clientX - tx0;
+  if (dx < -50) goTo(cur + 1); else if (dx > 50) goTo(cur - 1);
+}, {passive: true});
+
+/* ==========================================
+   5. GOOGLE CALENDAR
+   ========================================== */
+const CLIENT_ID = '70741329352-r84pbk1ohuiminlc44lpbd5rgrs258lv.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
+let tokenClient;
+
+window.onload = function() {
+  gapi.load('client', async () => {
+    await gapi.client.init({ discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'] });
+  });
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID, scope: SCOPES,
+    callback: (tokenResponse) => {
+      if (tokenResponse && tokenResponse.access_token) {
+        document.getElementById('auth-btn').textContent = 'Sincronizado ✓';
+        document.getElementById('auth-btn').style.borderColor = 'var(--accent)';
+        document.getElementById('auth-btn').style.color = 'var(--accent)';
+        listUpcomingEvents();
+      }
+    },
+  });
+};
+
+function handleAuthClick() {
+  if (CLIENT_ID.includes('SEU_CLIENT_ID')) {
+    alert("Adicione seu Google Client ID no código (linha ~294) para a agenda funcionar.");
+    return;
+  }
+  tokenClient.requestAccessToken({prompt: 'consent'});
+}
+
+async function listUpcomingEvents() {
+  try {
+    const response = await gapi.client.calendar.events.list({
+      'calendarId': 'primary', 'timeMin': (new Date()).toISOString(),
+      'showDeleted': false, 'singleEvents': true, 'maxResults': 6, 'orderBy': 'startTime'
+    });
+    const events = response.result.items;
+    const list = document.getElementById('events-list');
+    list.innerHTML = '';
+    
+    if (!events || events.length === 0) {
+      list.innerHTML = '<div style="text-align:center; color:var(--muted); font-size: 14px; margin-top: 50px;">Nenhum evento próximo. Dia livre! ☕</div>';
+      return;
+    }
+    events.forEach(ev => {
+      const start = ev.start.dateTime || ev.start.date;
+      const d = new Date(start);
+      const timeStr = ev.start.dateTime ? pad(d.getHours())+':'+pad(d.getMinutes()) : 'Dia Todo';
+      const isToday = d.toDateString() === new Date().toDateString();
+      const dateLbl = isToday ? 'Hoje, ' : `${pad(d.getDate())}/${pad(d.getMonth()+1)} - `;
+      
+      list.innerHTML += `
+        <div class="event-item">
+          <div class="event-time">${timeStr}</div>
+          <div class="event-title"><span style="color:var(--muted); font-size:11px; margin-right:8px;">${dateLbl}</span>${ev.summary}</div>
+        </div>
+      `;
+    });
+  } catch (err) { console.error("Erro na agenda", err); }
+}
+</script>
 </body>
 </html>
