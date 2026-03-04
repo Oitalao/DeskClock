@@ -1,47 +1,57 @@
 :root {
     --bg-color: #000000;
-    --accent-color: #ff8c00; /* Laranja aesthetic */
-    --text-color: #ffffff;
+    --accent-color: #ff8c00; 
+    --text-secondary: #888888;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --font-main: 'Inter', sans-serif;
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
     background-color: var(--bg-color);
-    color: var(--text-color);
-    overflow: hidden; /* Esconde rolagem */
+    color: #ffffff;
+    font-family: var(--font-main);
     width: 100vw;
     height: 100vh;
+    height: 100dvh; /* Encaixe perfeito em telas mobile */
+    overflow: hidden;
+    position: fixed; /* Evita o "bounce" ao rolar a tela no iOS */
+    transition: opacity 2s ease, filter 2s ease;
 }
 
-/* PROTEÇÃO CONTRA BURN-IN 
-   Move a tela inteira em um raio de 10px bem devagar a cada 5 minutos */
+/* Modo Noturno (Ativado pelo JS durante a madrugada) */
+body.night-mode {
+    --accent-color: #b35900;
+    opacity: 0.6;
+}
+
+/* Proteção Burn-in Suave (Move a tela devagar para proteger o OLED) */
 @keyframes burnInProtect {
-    0%   { transform: translate(0px, 0px); }
-    25%  { transform: translate(5px, 8px); }
-    50%  { transform: translate(-4px, -6px); }
-    75%  { transform: translate(6px, -2px); }
-    100% { transform: translate(0px, 0px); }
+    0%   { transform: translate(0, 0); }
+    33%  { transform: translate(2px, 3px); }
+    66%  { transform: translate(-2px, 2px); }
+    100% { transform: translate(0, 0); }
 }
 
 #burn-in-protector {
     width: 100%;
     height: 100%;
-    animation: burnInProtect 300s infinite alternate linear;
+    animation: burnInProtect 120s infinite linear;
     display: flex;
     flex-direction: column;
 }
 
 #carousel {
     display: flex;
-    width: 300vw; /* 3 telas */
-    height: 90vh;
-    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    width: 300vw;
+    height: 85vh; /* Reserva espaço para os dots na parte inferior */
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .screen {
@@ -51,82 +61,139 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    text-align: center;
+    padding: 20px;
 }
 
-/* Tipografia Relógio */
+/* --- TELA 1: RELÓGIO --- */
 .clock-time {
-    font-size: 8rem;
+    font-size: clamp(5rem, 25vw, 12rem);
     font-weight: 300;
     color: var(--accent-color);
-    text-shadow: 0 0 20px rgba(255, 140, 0, 0.3);
+    line-height: 1;
+    letter-spacing: -2px;
 }
 
 .clock-date {
-    font-size: 1.5rem;
-    letter-spacing: 2px;
-    opacity: 0.8;
-}
-
-/* Tipografia Clima e Calendário */
-h2 {
-    color: var(--accent-color);
-    margin-bottom: 20px;
-    font-weight: 400;
+    font-size: clamp(1rem, 4vw, 1.8rem);
+    color: var(--text-secondary);
+    margin-top: 15px;
+    text-transform: capitalize;
     letter-spacing: 1px;
 }
 
-#temp { font-size: 4rem; color: var(--accent-color); }
-.weather-info p { font-size: 1.2rem; margin-top: 10px; }
+/* --- TELA 2 e 3: TÍTULOS E CLIMA --- */
+h2 {
+    font-size: clamp(1.2rem, 5vw, 1.5rem);
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    color: var(--text-secondary);
+}
 
+#temp { 
+    font-size: clamp(4rem, 18vw, 7rem); 
+    font-weight: 300;
+    color: #fff;
+    line-height: 1;
+}
+
+.weather-info p { 
+    color: var(--text-secondary);
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    margin-top: 1rem;
+    text-align: center;
+}
+
+/* --- TELA 3: LISTA DE EVENTOS E INPUTS --- */
 #events-list {
-    margin-top: 15px;
+    width: 90%;
+    max-width: 400px;
+    margin-bottom: 20px;
     max-height: 50vh;
     overflow-y: auto;
-    width: 80%;
-    text-align: left;
-}
-.event-item {
-    padding: 10px;
-    border-left: 3px solid var(--accent-color);
-    margin-bottom: 10px;
-    background: rgba(255, 255, 255, 0.05);
 }
 
-/* Inputs e Botões */
-.aesthetic-btn, button {
-    background: transparent;
-    color: var(--accent-color);
-    border: 1px solid var(--accent-color);
-    padding: 10px 20px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: 0.3s;
+.event-item {
+    padding: 15px;
+    border-radius: 12px;
+    background: var(--card-bg);
+    border-left: 3px solid var(--accent-color);
+    margin-bottom: 12px;
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    backdrop-filter: blur(5px);
 }
+
+.event-item strong {
+    color: var(--accent-color);
+    margin-right: 8px;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    width: 90%;
+    max-width: 400px;
+}
+
 .aesthetic-input {
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--accent-color);
+    flex: 1;
+    background: var(--card-bg);
+    border: 1px solid #333;
+    border-radius: 8px;
     color: white;
-    padding: 10px;
+    padding: 12px 15px;
     font-size: 1rem;
+    transition: border 0.3s;
     outline: none;
 }
 
-/* Dots */
+.aesthetic-input:focus {
+    border-color: var(--accent-color);
+}
+
+button {
+    background: var(--accent-color);
+    color: #000;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+button.add-btn {
+    padding: 12px 20px;
+    font-size: 1.2rem;
+}
+
+button:active { 
+    opacity: 0.7; 
+    transform: scale(0.95);
+}
+
+/* --- INDICADORES (DOTS) --- */
 .dots {
-    height: 10vh;
+    height: 15vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
+
 .dot {
-    width: 8px;
-    height: 8px;
-    background: #555;
+    width: 6px;
+    height: 6px;
+    background: #333;
     border-radius: 50%;
-    transition: 0.3s;
+    transition: all 0.4s ease;
 }
-.dot.active { background: var(--accent-color); box-shadow: 0 0 10px var(--accent-color); }
+
+.dot.active { 
+    background: var(--accent-color); 
+    width: 24px; /* O dot ativo vira uma pílula/barra */
+    border-radius: 10px;
+}

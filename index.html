@@ -3,9 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My Desk Smart Clock</title>
+    <title>OLED Smart Clock</title>
+    
     <link rel="manifest" href="manifest.json">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="style.css">
+    
     <script async defer src="https://apis.google.com/js/api.js"></script>
     <script async defer src="https://accounts.google.com/gsi/client"></script>
 </head>
@@ -22,18 +29,21 @@
                 <h2>Clima Atual</h2>
                 <div class="weather-info">
                     <span id="temp">--°C</span>
-                    <p>Chuva: <span id="rain">--%</span> | Umidade: <span id="humidity">--%</span></p>
+                    <p>Chuva: <span id="rain">--%</span> &nbsp;|&nbsp; Umidade: <span id="humidity">--%</span></p>
                 </div>
             </div>
 
             <div class="screen" id="screen-calendar">
                 <h2>Google Calendário</h2>
                 <button id="auth-btn" onclick="handleAuthClick()">Conectar Google</button>
+                
                 <div id="events-list"></div>
                 
                 <div id="add-event-form" style="display: none;">
-                    <input type="text" id="event-title" placeholder="Nome do evento" class="aesthetic-input">
-                    <button onclick="addEvent()" class="aesthetic-btn">+</button>
+                    <div class="input-group">
+                        <input type="text" id="event-title" placeholder="Nome do evento" class="aesthetic-input">
+                        <button onclick="addEvent()" class="add-btn">+</button>
+                    </div>
                 </div>
             </div>
 
@@ -48,5 +58,4 @@
 
     <script src="script.js"></script>
 </body>
-
 </html>
