@@ -279,7 +279,7 @@ document.addEventListener('touchend', e => {
 }, {passive: true});
 
 /* ==========================================
-   5. GOOGLE CALENDAR (VERSÃO PERSISTENTE)
+   5. GOOGLE CALENDAR (ATUALIZAÇÃO 10 MIN + PERSISTÊNCIA)
    ========================================== */
 const CLIENT_ID = '70741329352-r84pbk1ohuiminlc44lpbd5rgrs258lv.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
@@ -290,8 +290,7 @@ window.onload = function() {
     await gapi.client.init({ 
       discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'] 
     });
-    
-    // Tenta carregar token salvo anteriormente
+
     const savedToken = localStorage.getItem('gcal_token');
     if (savedToken) {
       gapi.client.setToken(JSON.parse(savedToken));
@@ -301,17 +300,22 @@ window.onload = function() {
   });
 
   tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID, 
-    scope: SCOPES,
+    client_id: CLIENT_ID, scope: SCOPES,
     callback: (tokenResponse) => {
       if (tokenResponse && tokenResponse.access_token) {
-        // Salva o token para a próxima visita
         localStorage.setItem('gcal_token', JSON.stringify(tokenResponse));
         updateAuthUI(true);
         listUpcomingEvents();
       }
     },
   });
+
+  // ATUALIZAÇÃO AUTOMÁTICA A CADA 10 MINUTOS
+  setInterval(() => {
+    if (localStorage.getItem('gcal_token')) {
+      listUpcomingEvents();
+    }
+  }, 600000); 
 };
 
 function updateAuthUI(isConnected) {
@@ -324,7 +328,6 @@ function updateAuthUI(isConnected) {
 }
 
 function handleAuthClick() {
-  // Solicita o token (o Google tentará fazer silenciosamente se já houve consentimento)
   tokenClient.requestAccessToken({prompt: 'consent'});
 }
 
@@ -369,10 +372,7 @@ async function listUpcomingEvents() {
     });
   } catch (err) { 
     console.error("Erro na agenda", err);
-    // Se o token expirou, limpa e pede login de novo
-    if (err.status === 401) {
-       localStorage.removeItem('gcal_token');
-    }
+    if (err.status === 401) localStorage.removeItem('gcal_token');
   }
 }
 
@@ -392,7 +392,6 @@ document.addEventListener('touchend', e => {
   lastTap = now;
 }, { passive: true });
 
-// Fallback para desktop
 document.addEventListener('dblclick', () => enterFullscreen());
 </script>
 </body>
