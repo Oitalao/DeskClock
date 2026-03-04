@@ -17,7 +17,7 @@
 
 <style>
 :root {
-  --bg: #000000; 
+  --bg: #000000;
   --text: #f2ede5;
   --muted: rgba(242, 237, 229, 0.4);
   --accent: #ff8c00;
@@ -32,10 +32,9 @@ html, body {
   background: var(--bg); color: var(--text);
   font-family: 'Space Mono', monospace;
   overflow: hidden;
-  position: fixed; 
+  position: fixed;
 }
 
-/* Proteção Burn-in */
 @keyframes burnInProtect {
   0% { transform: translate(0, 0); }
   25% { transform: translate(2px, 2px); }
@@ -48,7 +47,6 @@ html, body {
   animation: burnInProtect 120s infinite linear;
 }
 
-/* Carrossel */
 .viewport { position: absolute; inset: 0; overflow: hidden; z-index: 1; }
 .track { display: flex; height: 100%; width: 300%; transition: transform 0.6s cubic-bezier(0.25, 1, 0.35, 1); }
 .slide { width: 33.3333%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 4vw 8vw; flex-direction: column; }
@@ -57,19 +55,18 @@ html, body {
 .time-display { font-family: 'Cormorant Garamond', serif; font-size: clamp(90px, 22vw, 240px); font-weight: 300; line-height: 0.9; letter-spacing: -3px; text-shadow: 0 0 50px rgba(255, 140, 0, 0.12); }
 .colon { color: var(--accent); animation: blink 1s step-end infinite; }
 @keyframes blink { 50% { opacity: 0.2; } }
-/* Maior espaçamento vertical aqui */
 .date-display { font-size: clamp(12px, 2.5vw, 20px); color: var(--accent); letter-spacing: 5px; text-transform: uppercase; margin-top: 10vh; font-weight: 400; }
-.seconds-bar-wrapper { width: 60vw; max-width: 500px; height: 2px; background: var(--border); border-radius: 2px; margin-top: 4vh; overflow: hidden; }
+.seconds-bar-wrapper { width: 60vw; max-width: 500px; height: 2px; background: var(--border); border-radius: 2px; margin-top: 5vh; overflow: hidden; }
 .seconds-bar { height: 100%; background: linear-gradient(90deg, #5a9ec4, var(--accent)); width: 0%; transition: width 1s linear; }
 
 /* 2. Clima */
-.weather-layout { display: flex; width: 100%; max-width: 800px; justify-content: space-around; align-items: center; gap: 4vw; margin-bottom: 4vh; }
+.weather-layout { display: flex; width: 100%; max-width: 800px; justify-content: space-around; align-items: center; gap: 4vw; margin-bottom: 6vh; }
 .wx-icon { font-size: clamp(80px, 16vw, 160px); color: var(--text); filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.1)); }
 .wx-info { display: flex; flex-direction: column; align-items: flex-start; }
 .wx-temp { font-family: 'Cormorant Garamond', serif; font-size: clamp(70px, 16vw, 160px); font-weight: 300; line-height: 1; }
 .wx-temp sup { font-size: 0.4em; color: var(--accent); vertical-align: super; }
-.wx-desc { font-size: clamp(12px, 2.5vw, 16px); color: var(--text); letter-spacing: 2px; text-transform: capitalize; margin-top: 15px; }
-.wx-loc { font-size: clamp(9px, 1.8vw, 12px); color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-top: 10px; display: flex; align-items: center; gap: 6px; }
+.wx-desc { font-size: clamp(12px, 2.5vw, 16px); color: var(--text); letter-spacing: 2px; text-transform: capitalize; margin-top: 18px; }
+.wx-loc { font-size: clamp(9px, 1.8vw, 12px); color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-top: 14px; display: flex; align-items: center; gap: 6px; }
 
 .wx-pills { display: flex; width: 100%; max-width: 800px; gap: 15px; justify-content: center; }
 .pill { flex: 1; background: var(--glass); border: 1px solid var(--border); padding: 16px 10px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
@@ -89,7 +86,6 @@ html, body {
 .event-time { color: var(--accent); font-size: 16px; font-weight: 700; min-width: 60px; text-align: right; }
 .event-title { font-size: 16px; color: var(--text); font-weight: 400; line-height: 1.4; }
 
-/* Indicadores (Dots) */
 .dots { position: fixed; bottom: 5vh; left: 50%; transform: translateX(-50%); display: flex; gap: 14px; z-index: 10; }
 .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: all 0.4s cubic-bezier(0.25, 1, 0.35, 1); }
 .dot.active { background: var(--accent); width: 32px; border-radius: 6px; box-shadow: 0 0 12px rgba(255, 140, 0, 0.5); }
@@ -191,7 +187,6 @@ function updateClock() {
   document.getElementById('mm').textContent = pad(now.getMinutes());
   document.getElementById('date').textContent = `${dias[now.getDay()]} · ${pad(now.getDate())} ${meses[now.getMonth()]}`;
   document.getElementById('seconds-bar').style.width = ((now.getSeconds() / 59) * 100) + '%';
-  
   const h = now.getHours();
   if (h >= 23 || h < 6) document.body.classList.add('deep-night');
   else document.body.classList.remove('deep-night');
@@ -200,9 +195,8 @@ setInterval(updateClock, 1000);
 updateClock();
 
 /* ==========================================
-   3. CLIMA & LOCALIZAÇÃO (Phosphor Icons + Nominatim)
+   3. CLIMA & LOCALIZAÇÃO
    ========================================== */
-// Mapeamento de códigos climáticos para classes do Phosphor Icons
 const WX_ICON = {
   0:'ph-sun', 1:'ph-cloud-sun', 2:'ph-cloud-sun', 3:'ph-cloud',
   45:'ph-cloud-fog', 48:'ph-cloud-fog', 51:'ph-cloud-rain', 53:'ph-cloud-rain', 55:'ph-cloud-rain',
@@ -226,9 +220,7 @@ async function getCityName(lat, lon) {
     const data = await res.json();
     const a = data.address || {};
     return a.city || a.town || a.village || a.county || 'Localização Atual';
-  } catch(e) {
-    return 'Localização Atual';
-  }
+  } catch(e) { return 'Localização Atual'; }
 }
 
 async function fetchWeather(lat = -23.5505, lon = -46.6333) {
@@ -238,34 +230,28 @@ async function fetchWeather(lat = -23.5505, lon = -46.6333) {
     const d = await res.json();
     const c = d.current;
     const hourIndex = new Date().getHours();
-    
-    // Atualiza ícone usando Phosphor
     document.getElementById('wico').className = `wx-icon ph-light ${WX_ICON[c.weather_code] || 'ph-thermometer'}`;
-    
     document.getElementById('wtemp').textContent = Math.round(c.temperature_2m);
     document.getElementById('wdesc').textContent = WX_DESC[c.weather_code] || 'Clima Atual';
     document.getElementById('whum').textContent = c.relative_humidity_2m + '%';
     document.getElementById('wwind').textContent = Math.round(c.wind_speed_10m);
     document.getElementById('wrain').textContent = d.hourly.precipitation_probability[hourIndex] + '%';
-
-    // Pega o nome da cidade real
     const cityName = await getCityName(lat, lon);
     document.getElementById('wloc').textContent = cityName;
-
   } catch (e) { console.warn("Erro no clima", e); }
 }
 
 if (navigator.geolocation) {
   navigator.geolocation.getCurrentPosition(
     pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-    err => fetchWeather(), // SP fallback se negar
+    err => fetchWeather(),
     { timeout: 5000 }
   );
 } else { fetchWeather(); }
 setInterval(() => navigator.geolocation.getCurrentPosition(p => fetchWeather(p.coords.latitude, p.coords.longitude), e => fetchWeather()), 3600000);
 
 /* ==========================================
-   4. CARROSSEL (SWIPE E AUTO)
+   4. CARROSSEL
    ========================================== */
 const track = document.getElementById('track');
 const dots = document.querySelectorAll('.dot');
@@ -288,7 +274,7 @@ let tx0 = 0, dragging = false;
 document.addEventListener('touchstart', e => { tx0 = e.touches[0].clientX; dragging = true; }, {passive: true});
 document.addEventListener('touchend', e => {
   if (!dragging) return; dragging = false;
-  let dx = e.changedTouches[0].clientX - tx0;
+  const dx = e.changedTouches[0].clientX - tx0;
   if (dx < -50) goTo(cur + 1); else if (dx > 50) goTo(cur - 1);
 }, {passive: true});
 
@@ -318,7 +304,7 @@ window.onload = function() {
 
 function handleAuthClick() {
   if (CLIENT_ID.includes('SEU_CLIENT_ID')) {
-    alert("Adicione seu Google Client ID no código (linha ~294) para a agenda funcionar.");
+    alert("Adicione seu Google Client ID no código para a agenda funcionar.");
     return;
   }
   tokenClient.requestAccessToken({prompt: 'consent'});
@@ -333,7 +319,6 @@ async function listUpcomingEvents() {
     const events = response.result.items;
     const list = document.getElementById('events-list');
     list.innerHTML = '';
-    
     if (!events || events.length === 0) {
       list.innerHTML = '<div style="text-align:center; color:var(--muted); font-size: 14px; margin-top: 50px;">Nenhum evento próximo. Dia livre! ☕</div>';
       return;
@@ -344,7 +329,6 @@ async function listUpcomingEvents() {
       const timeStr = ev.start.dateTime ? pad(d.getHours())+':'+pad(d.getMinutes()) : 'Dia Todo';
       const isToday = d.toDateString() === new Date().toDateString();
       const dateLbl = isToday ? 'Hoje, ' : `${pad(d.getDate())}/${pad(d.getMonth()+1)} - `;
-      
       list.innerHTML += `
         <div class="event-item">
           <div class="event-time">${timeStr}</div>
@@ -354,6 +338,25 @@ async function listUpcomingEvents() {
     });
   } catch (err) { console.error("Erro na agenda", err); }
 }
+
+/* ==========================================
+   6. FULLSCREEN — TOQUE DUPLO
+   ========================================== */
+function enterFullscreen() {
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+  if (req) req.call(el).catch(() => {});
+}
+
+let lastTap = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTap < 300) enterFullscreen();
+  lastTap = now;
+}, { passive: true });
+
+// Fallback para desktop
+document.addEventListener('dblclick', () => enterFullscreen());
 </script>
 </body>
 </html>
